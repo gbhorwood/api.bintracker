@@ -1,0 +1,78 @@
+<!doctype html> <!-- Important: must specify -->
+<html>
+<head>
+  <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 charecters -->
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;600&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+  <style>
+  </style>
+
+</head>
+<body>
+
+    <rapi-doc
+        spec-url = "openapi.json"
+        primary-color = "#333f54"
+        secondary-color="#e6e1fc"
+        render-style = "read"
+        show-header='false'
+        allow-search='false'
+        show-info	= "false"
+        allow-authentication = "true"
+        allow-server-selection = "false"
+        nav-bg-color = "#333f54"
+        nav-text-color="#e6e1fc"
+        primary-color ="#E63946"
+        nav-accent-color="#E63946"
+        theme="light"
+        >
+
+        <!--
+        logo
+        -->
+		<img slot="nav-logo" src="https://cloverhitch-public-assets.s3.us-west-2.amazonaws.com/bintracker-logo.png" width=240 height=240/>
+
+        <!--
+        items explanation
+        -->
+        <div slot="tag--items">
+            <i>User-managed items that can be put into bins</i>.
+            <br>
+            Items are classes of concrete BinItems that reside in bins. They are per-user; there is no 
+            common set of Items available. An Item must be created before it can be put into a bin
+            and an arbitrary number of copies of the item can be put into an arbitrary number of bins.
+            <p />
+            Items are defined by a name and have a mandatory measurement, ie. "Cereal 300g"
+        </div>
+
+        <!--
+        bins explanation
+        -->
+        <div slot="tag--bins">
+            <i>User-managed bins that can contain items</i>.
+            <br>
+        </div>
+
+        <!--
+        binitems explanation
+        -->
+        <div slot="tag--binitems">
+            <i>Items that are in bins</i>
+            <br>
+        </div>
+
+
+        <!--
+        foot
+        -->
+        <center slot="footer">
+            <hr style="width:50%">
+            <p>Cloverhitch technologies</p>
+        </center>
+
+    </rapi-doc>
+
+</body>
+</html>

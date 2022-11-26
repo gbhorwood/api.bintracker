@@ -1,0 +1,938 @@
+#-----------------------------------------------------
+# bintracker swagger.yaml
+#
+
+openapi: "3.0.3"
+info:
+  version: 1.0.0
+  title: Bintracker
+  description: Bintracker api
+servers:
+  - url: "https://staging-api.bintracker.com"
+    description: staging
+  - url: "https://testing-api.bintracker.com"
+    description: testing
+
+paths:
+
+  #-----------------------------------------------------
+  # Register
+
+  ###
+  # POST /api/register
+  #
+  /api/register:
+    post:
+      summary: POST register
+      tags:
+        - session
+      description: Self-register an account.
+      operationId: RegisterController.register
+      requestBody:
+        required: true
+        description:
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/register_request'
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/register_response'
+  ###
+  # POST /api/login
+  #
+  /api/login:
+    post:
+      summary: POST login
+      tags:
+        - session
+      description: Self-register an account.
+      operationId: RegisterController.login
+      requestBody:
+        required: true
+        description:
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login_request'
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/register_response'
+
+  #-----------------------------------------------------
+  # Items
+
+
+  ###
+  # POST /api/items
+  #
+  /api/items:
+    post:
+      summary: POST an item
+      tags:
+        - items
+      description: Post one item.
+                   <p />
+                   Items are attached to user accounts, so an item posted by
+                   one account is not visible or accessible to another account.
+                   <p />
+                   Items can be added to or removed from bins.
+      operationId: ItemController.postItems
+      requestBody:
+        required: true
+        description:
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/item_request'
+            example:
+              name: Rotini
+              amount: 750
+              unit_id: 2
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/item_response'
+
+  ###
+  # GET /api/items
+  #
+    get:
+      summary: GET page of items
+      tags:
+        - items
+      description: Get one page of user's items.
+      operationId: ItemController.getItems
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: The page number
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+            default: 1
+          example: 2
+        - name: size
+          in: query
+          required: false
+          description: The number of records per page
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+            default: 10
+          example: 5
+        - name: order
+          in: query
+          required: false
+          description: The column to order on. Use either 'name' or 'created_at'
+          schema:
+            type : string
+            default: name
+          example: name 
+        - name: sort
+          in: query
+          required: false
+          description: The direction of the sort, either 'asc' or 'desc'
+          schema:
+            type : string
+            default: asc
+          example: asc 
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/item_response'
+                  links:
+                    $ref: '#/components/schemas/pagination'
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Items do not exist"
+        403:
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Unauthorized"
+
+
+  ###
+  # GET /api/items/units
+  #
+  /api/items/units:
+    get:
+      summary: GET units of measurement
+      tags:
+        - items
+      description: Get all units, ie 'grams', 'liters' etc. Used for making menus when creating items.
+                   <p />
+                   Units are used as part of a description of an item. ie. Item id 3 "Box of cereal" 300 grams.
+                   The unit id for 'grams' is needed as part of this description.
+      operationId: ItemController.getUnits
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/unit_response'
+              example:
+                data:
+                  - id: 1
+                    name: count
+                  - id: 2
+                    name: grams
+                  - id: 3
+                    name: kilos
+
+  ###
+  # DELETE /api/items
+  #
+  /api/items/{id}:
+    delete:
+      summary: DELETE an item
+      tags:
+        - items
+      description: Delete one item. The item must not be in a bin.
+      operationId: ItemController.deleteItems
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: item id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    nullable: true
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Item does not exist"
+        403:
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Cannot delete item that exists in a bin"
+
+
+
+
+  #-----------------------------------------------------
+  # BinItems
+
+  ###
+  # PUT api/bins/{binId}/items/{itemId}
+  #
+  /api/bins/{binId}/items/{itemId}:
+    put:
+      summary: PUT item in bin
+      tags:
+        - binitems
+      description: Puts one item by id into one bin by id
+      operationId: ItemController.putBinItem
+      parameters:
+        - name: binId
+          in: path
+          required: true
+          description: id of the bin
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+        - name: itemId
+          in: path
+          required: true
+          description: id of the item
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 7
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    nullable: true
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Item does not exist"
+
+  ###
+  # DELETE api/binitems/{id}
+  #
+  /api/binitems/{id}:
+    delete:
+      summary: DELETE bin item
+      tags:
+        - binitems
+      description: Deletes one bin item, ie removes an item from a bin.
+                   <p />
+                   Bin items are identified by the 'bin item id' since there may
+                   be multiple items of the same type in one bin and the user may wish
+                   to remove a specific one, ie the oldest one.
+      operationId: ItemController.deleteBinItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of the bin item
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    nullable: true
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Item does not exist"
+
+  #-----------------------------------------------------
+  # Bins
+
+  ###
+  # GET /api/bins/digest
+  #
+  /api/bins/digest:
+    get:
+      summary: GET digest of bins
+      tags:
+        - bins
+      description: Get list of bins owned by the session user.
+                   <p />
+                   This is just a digest of names and ids, used for building menus.
+      operationId: ItemController.getBinsDigest
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/bin_response'
+              example:
+                data:
+                  - id: 1
+                    name: Big blue bin
+                  - id: 2
+                  - id: 3
+                    name: Bin 3
+
+  ###
+  # POST /api/bins
+  #
+  /api/bins:
+    post:
+      summary: POST new bin
+      tags:
+        - bins
+      description: Create a new bin
+      operationId: BinController.postBins
+      requestBody:
+        required: true
+        description:
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bin_request'
+            example:
+              name: Big bin
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/bin_response'
+
+  ###
+  # GET /api/bins/{id}/items
+  #
+  /api/bins/{id}/items:
+    get:
+      summary: GET items in bin
+      tags:
+        - bins
+      description: Get a list of all items in a bin
+      operationId: BinController.getBinItems
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: bin id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/binitem_response'
+              example:
+                data:
+                  - id: 4
+                    name: Oil, canola
+                    amount: 1
+                    image: http://example.ca/oil.jpg
+                    unit_id: 5
+                    unit: l
+                    categories:
+                      - id: 2
+                        name: baking
+                      - id: 4
+                        name: fats and oils
+                    bin_item_id: 1
+                    store_date: 2021-01-03 12:45:23
+                    store_date_ago: 8 months ago
+
+
+
+  #-----------------------------------------------------
+  # Categories
+
+  ###
+  # GET /api/categories/digest
+  #
+  /api/categories/digest:
+    get:
+      summary: GET digest of categories
+      tags:
+        - categories
+      description: Get list of categories owned by the session user.
+                   <p />
+                   This is just a digest of names and ids, used for building menus.
+      operationId: CategoryController.getCategoriesDigest
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/category_response'
+              example:
+                data:
+                  - id: 1
+                    name: Party supplies
+                  - id: 2
+                    name: Baking supplies
+
+  ###
+  # GET /api/categories/{id}/items
+  #
+  /api/categories/{id}/items:
+    get:
+      summary: GET items of one category
+      tags:
+        - categories
+      description: Get list of all items tagged with the category identified by `id`
+      operationId: CategoryController.getCategoryItems
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: category id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/item_response'
+              example:
+                data:
+                  - id: 1
+                    name: Rye, Alberta Premium
+                    amount: 750
+                    unit_id: 4
+                    unit: ml
+                    image: https://example.ca/rye.jpg
+                    categories:
+                      - id: 3
+                        name: Party supplies
+                      - id: 7
+                        name: Staples
+
+  ###
+  # PUT /api/categories/{categoryId}/items/{itemId}
+  #
+  /api/categories/{category_id}/items/{item_id}:
+    put:
+      summary: PUT item in category
+      tags:
+        - categories
+      description: Add one item identified by `item_id` to a category identified by `category_id`.
+      operationId: CategoryController.putCategoryItem
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          description: the category id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+        - name: item_id
+          in: path
+          required: true
+          description: the item id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    nullable: true
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Item does not exist"
+
+  ###
+  # DELETE /api/categories/{categoryId}/items/{itemId}
+  #
+    delete:
+      summary: DELETE item in category
+      tags:
+        - categories
+      description: Remove one item identified by `item_id` from a category identified by `category_id`.
+      operationId: CategoryController.deleteCategoryItem
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          description: the category id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+        - name: item_id
+          in: path
+          required: true
+          description: the item id
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+          example: 2
+      responses:
+        201:
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    nullable: true
+        404:
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: "Item does not exist"
+
+components:
+  
+  #####
+  # schemas
+  # all request and response json object are described here and 
+  # referenced in endpoint definitions using the '$ref' command.
+  # keep response and request schemas separate, even if they are identical.
+  #
+  # put example data in the 'example:' block of the endpoint
+  schemas:
+
+    #-----------------------------------------------------
+    # response schemas
+    
+    ###
+    # response: unit_response
+    unit_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: the id of the unit. all references to unit use the id.
+        name:
+          type: string
+          description: display name of the unit, ie. 'count' or 'milliliters'
+
+    ###
+    # response: bin
+    bin_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: the id of the bin. all references to bin use the id.
+        name:
+          type: string
+          nullable: true
+          description: display name of the bin
+
+    ###
+    # response: category
+    category_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: the id of the category. all references to bin use the id.
+        name:
+          type: string
+          nullable: true
+          description: display name of the category
+          
+    ###
+    # response: item
+    item_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: the id of the item
+          example: 1
+        name:
+          type: string
+          description: display name of the item
+          example: Rotini
+        amount:
+          type: integer
+          description: the quantity of the item. ie. if it's 300g box, the 'amount' would be 300.
+          example: 750
+        image:
+          type: string
+          description: the url of the image
+          nullable: true
+          example: https://example.ca/rotini.jpg
+        unit_id:
+          type: integer
+          description: the id of the units of the amount of this item. ie, if the item is 300 grams, this is 2, the id of the unit 'grams'
+          example: 2
+        unit:
+          type: string
+          description: the human-readable unit, ie. 'grams'
+          example: grams
+        categories:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/item_category_response'
+          example:
+            - id: 1
+              name: food
+            - id: 18
+              name: Pasta
+
+
+    ###
+    # response: binitem_response
+    binitem_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: the id of the item
+          example: 4
+        name:
+          type: string
+          description: display name of the item
+          example: Canola Oil
+        amount:
+          type: integer
+          description: the quantity of the item. ie. if it's 300g box, the 'amount' would be 300.
+          example: 1.89
+        image:
+          type: string
+          description: the url of the image
+          nullable: true
+        unit_id:
+          type: integer
+          description: the id of the units of the amount of this item. ie, if the item is 300 grams, this is 2, the id of the unit 'grams'
+          example: 3
+        unit:
+          type: string
+          description: the human-readable unit, ie. 'grams'
+          example: Liters
+        categories:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/item_category_response'
+        bin_item_id:
+          type: integer
+          description: the id of the bin item. used when referencing this particular item in this bin, ie for delete.
+          example: 1
+        store_date:
+          type: string
+          description: the datetime the item was put in the bin
+          example: 2020-09-21
+        store_date_ago:
+          type: string
+          description: how long ago item was put in bin in human-readable format
+          example: 2 months 3 days
+
+     ###
+     # response: item_category_response
+    item_category_response:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          description: the id of the category
+          example: 2
+        name:
+          type: string
+          nullable: true
+          description: the name of the category
+          example: Cleaning supplies
+
+     ###
+     # response: register_response
+    register_response:
+      type: object
+      properties:
+        token:
+          type: string
+          nullable: false
+          description: The session token
+        name:
+          type: string
+          nullable: false
+          description: The user's full name
+        role_id:
+          type: integer
+          nullable: false
+          description: The id of the user's role
+
+    #-----------------------------------------------------
+    # request schemas
+
+    ###
+    # request: item_request
+    item_request:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: string
+        unit_id:
+          type: integer
+
+    ###
+    # request: bin_request
+    bin_request:
+      type: object
+      properties:
+        name:
+          type: string
+
+    ###
+    # login_request
+    login_request:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: The email of the account.
+        password:
+          type: string
+          description: The user-supplied password
+
+    ###
+    # register_request
+    register_request:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - c_password
+      properties:
+        email:
+          type: string
+          description: The email of the account.
+        password:
+          type: string
+          description: The user-supplied password
+        c_password:
+          type: string
+          description: Repeat of password
+        name:
+          type: string
+          nullable: true
+          
+    #-----------------------------------------------------
+    # pagination schemas
+    pagination:
+      type: object
+      properties:
+        has_more:
+          type: boolean
+          description: true if there are more pages
+          example: true
+        current_page:
+          type: integer
+          description: the number of the page that has been requested
+          example: 3
+        last_page:
+          type: integer
+          description: the maximum number of pages in the data set for this size
+          example: 8
+        current_size:
+          type: integer
+          description: the number of records per page
+          example: 10
+
+
+    #-----------------------------------------------------
+    # error schemas
+
+    ###
+    # error: error
+    error:
+      type: object
+      properties:
+        error:
+          nullable: true
+          type: string
+        details:
+          nullable: true
+          type: string

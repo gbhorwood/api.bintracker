@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <!-- testsuites -->
+    <testsuites>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <!-- coverage -->
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./app</directory>
+        </include>
+    </coverage>
+
+    <!-- config -->
+    <php>
+        <const name="XDEBUG_MODE" value="coverage"/>
+
+        <!--
+        Users convenience constants
+        -->
+        <const name="USER_ONE" value="1"/>
+        <const name="USER_TWO" value="2"/>
+        <const name="USER_ADMIN" value="3"/>
+
+        <server name="APP_ENV" value="testing"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_DRIVER" value="array"/>
+
+        <!--
+        SWAGGER url to openapi.json to test against
+        -->
+        <!-- deployed swagger -->
+        <!--
+        <const name="SWAGGER_JSON" value="https://humetric-swagger.fruitbat.io/openapi.json"/>
+        -->
+        <!-- local swagger -->
+        <!--
+        <const name="SWAGGER_JSON" value="http://swagger.humetric.test/openapi.json"/>
+        -->
+        <const name="SWAGGER_JSON" value="swagger/upload/openapi.json"/>
+
+
+
+
+        <!--
+        DATABASE
+        -->
+        <!-- sqlite -->
+        <!--
+        <server name="DB_CONNECTION" value="sqlite"/>
+        <server name="DB_DATABASE" value=":memory:"/> 
+        -->
+        <!-- mysql -->
+        <server name="DB_HOST" value="127.0.0.1" />
+        <server name="DB_USER" value="bintracker_user" />
+        <server name="DB_PASSWD" value="405RueSainte-CatherineEst" />
+        <server name="DB_DBNAME" value="bintracker_local" />
+
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+    </php>
+</phpunit>

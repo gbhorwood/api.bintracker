@@ -18,13 +18,13 @@ class RegisterController extends BaseController
      * Utilities object
      * @see \App\Libs\Utilities
      */
-    protected $utilities;
+    protected Utilities $utilities;
 
     /**
      * Validation object
      * @see \App\Libs\Validation
      */
-    protected $validation;
+    protected Validation $validation;
 
     /**
      * Constructor
@@ -57,8 +57,8 @@ class RegisterController extends BaseController
         }
 
         // did you run php artisan passport:install
+        $input = $request->all();
         try {
-            $input = $request->all();
             $input['password'] = bcrypt($input['password']);
             $user = User::create($input);
 

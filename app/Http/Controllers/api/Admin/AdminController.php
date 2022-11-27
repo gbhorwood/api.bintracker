@@ -22,13 +22,13 @@ class AdminController extends BaseController
      * Utilities object
      * @see \App\Libs\Utilities
      */
-    protected $utilities;
+    protected Utilities $utilities;
 
     /**
      * Validation object
      * @see \App\Libs\Validation
      */
-    protected $validation;
+    protected Validation $validation;
 
     /**
      * Constructor

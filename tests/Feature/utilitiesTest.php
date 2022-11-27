@@ -190,7 +190,7 @@ class utilitiesTest extends FruitbatTestCase
     public function http400provider_validateDateTime()
     {
         return [
-            [null],
+            [""],
             ["notadate"],
             ["2021-11-34"],
             ["2021-11-23 12:34:77"],

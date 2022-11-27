@@ -112,7 +112,7 @@ class Utilities {
      * @param String $date The string to validate
      * @return boolean
      */
-    public function validateDateTime($date, $format = 'Y-m-d H:i:s')
+    public function validateDateTime(String $date, String $format = 'Y-m-d H:i:s'):bool
     {
         $d = \DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) == $date;

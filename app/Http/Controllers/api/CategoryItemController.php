@@ -9,6 +9,8 @@ use App\Models\Item;
 use App\Models\Category;
 use App\Models\CategoryItem;
 
+use App\Libs\Utilities;
+
 /**
  * CategoryItemController
  *
@@ -20,14 +22,14 @@ class CategoryItemController extends BaseController
      * Utilities object
      * @see \App\Libs\Utilities
      */
-    protected $utilities;
+    protected Utilities $utilities;
 
     /**
      * Constructor
      *
      * @param \App\Libs\Utilities $utilities The utilities lib object dependency
      */
-    public function __construct(\App\Libs\Utilities $utilities) {
+    public function __construct(Utilities $utilities) {
         $this->utilities = $utilities;
     }
 

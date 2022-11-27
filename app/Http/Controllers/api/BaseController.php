@@ -6,7 +6,7 @@ use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller as Controller;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 use App\Model\User;
 use App\Model\Role;
@@ -27,7 +27,7 @@ class BaseController extends Controller
      * @param   Int   $status  The HTTP status code of the response, ie 200
      * @param   Mixed $data    The data object to return under 'data'
      * @param   Array $hateoas An array of HATEOAS data, optional
-     * @return \Illuminate\Http\Response
+     * @return  JsonResponse
      */
     public function sendResponse(Int $status, $data, Array $hateoas = []):JsonResponse
     {
@@ -46,12 +46,12 @@ class BaseController extends Controller
     /**
      * Error response method
      *
-     * @param  Int    status  The HTTP status code of the response, ie 400
-     * @param  Mixed  error   The string error message to show the user. String or array
-     * @param  String details Any details the fe may need
-     * @return \Illuminate\Http\Response
+     * @param  Int    $status  The HTTP status code of the response, ie 400
+     * @param  Mixed  $error   The string error message to show the user. String or array
+     * @param  Mixed  $details Any details the fe may need
+     * @return JsonResponse
      */
-    public function sendError(Int $status, $error, $details=null):JsonResponse
+    public function sendError(Int $status, Mixed $error, Mixed $details=null):JsonResponse
     {
         $response = [
             'error' => $error,
@@ -76,7 +76,7 @@ class BaseController extends Controller
     /**
      * Makes a nice hateoas array from LengthAwarePaginator collection
      *
-     * @param \Illuminate\Pagination\LengthAwarePaginator paginationCollection The return collection from Model::paginate()
+     * @param LengthAwarePaginator $paginationCollection The return collection from Model::paginate()
      * @return Array
      */
     protected function createPaginationFromOrm(LengthAwarePaginator $paginationCollection):Array
